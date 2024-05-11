@@ -39,9 +39,22 @@ class Natural {
         this.blocks = new_blocks;
     }
 
+    Natural MultiplyByTwo() {
+        return this.Add(this);
+    }
+
+    bool IsZero() {
+        return (this.blocks.Length == 1) && (blocks[0] == 0);
+    }
+
     public Natural() {
         this.blocks = new uint[1];
         this.blocks[0] = 0;
+    }
+
+    public Natural(uint n) {
+        this.blocks = new uint[1];
+        this.blocks[0] = n;
     }
 
     public Natural(char digit) {
@@ -56,8 +69,17 @@ class Natural {
         }
     }
 
-    public Natural(string expansion) {
 
+    public Natural(string expansion) {
+        Natural result = new Natural();
+        Natural TEN = new Natural(10);
+
+        foreach (char c in expansion) {
+            result = result.Multiply(TEN);
+            result = result.Add(new Natural(c));
+        }
+
+        this.blocks = result.blocks;
     }
 
     public Natural Add(Natural N) {
@@ -134,7 +156,7 @@ class Natural {
             extended_sub[i] = block_sub;
         }
 
-        Natural sub = new();
+        Natural sub = new Natural();
 
         if (borrow) {
             negative = true;
@@ -148,12 +170,70 @@ class Natural {
         return sub;
     }
 
+    public bool GreaterThan(Natural N) {
+        N.Monus(this, out bool negative);
+        return negative;
+    }
+
     public Natural Multiply(Natural N) {
-        
+        Natural result = new Natural();
+
+        for (int block = N.blocks.Length - 1; block >= 0; --block) {
+            for (int offset = 31; offset >= 0; --offset) {
+                Natural bit = new Natural();
+                if (((N.blocks[block] >> offset) & (uint)1) == (uint)1) {
+                    bit.blocks[0] = 1;
+                }
+                result = result.MultiplyByTwo();
+                result = result.Add(bit);
+            }
+        }
+
+        result.CorrectSize();
+
+        return result;
+    }
+
+    public Natural Divide(Natural N, out Natural remainder) {
+        if (N.IsZero()) {
+            throw new DivisionByZeroException();
+        }
+        else {
+            Natural quotient = new Natural();
+            quotient.blocks = new uint[this.blocks.Length];
+            remainder = new Natural();
+
+            for (int block = this.blocks.Length - 1; block >= 0; --block) {
+                for (int offset = 31; offset >= 0; --offset) {
+                    uint bit = (this.blocks[block] >> offset) & 1;
+                    remainder = remainder.MultiplyByTwo();
+                    remainder.blocks[0] |= bit;
+
+                    if (!(N.GreaterThan(remainder))) {
+                        remainder = remainder.Monus(N, out bool x);
+                        quotient.blocks[block] |= ((uint)1 << offset);
+                    }
+                }
+            }
+
+            quotient.CorrectSize();
+
+            return quotient;
+        }
     }
 
     public string GetString() {
+        Natural TEN = new Natural(10);
+        string s = "";
 
+        Natural n = this;
+        while (!n.IsZero()) {
+            n = n.Divide(TEN, out Natural r);
+            char digit = (char)((int)'0' + (int)(r.blocks[0]));
+            s = digit + s;
+        }
+
+        return s;
     }
 }
 

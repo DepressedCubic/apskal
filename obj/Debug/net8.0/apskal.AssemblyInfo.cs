@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("apskal")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8fd6a4514b9c063faff806fc7b96c18a28272a1f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+179b7d97f1ad93bcf295b9914389f72f3c7cda7c")]
 [assembly: System.Reflection.AssemblyProductAttribute("apskal")]
 [assembly: System.Reflection.AssemblyTitleAttribute("apskal")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

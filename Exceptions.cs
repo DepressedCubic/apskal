@@ -7,3 +7,7 @@ class InvalidDigitException : Exception {
         this.symbol = symbol;
     }
 }
+
+class DivisionByZeroException : Exception {
+
+}

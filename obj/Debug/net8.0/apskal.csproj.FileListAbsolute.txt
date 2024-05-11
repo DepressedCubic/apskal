@@ -12,3 +12,4 @@
 /home/carlos/uni/projects/apskal/obj/Debug/net8.0/apskal.pdb
 /home/carlos/uni/projects/apskal/obj/Debug/net8.0/apskal.genruntimeconfig.cache
 /home/carlos/uni/projects/apskal/obj/Debug/net8.0/ref/apskal.dll
+/home/carlos/uni/projects/apskal/obj/Debug/net8.0/apskal.sourcelink.json

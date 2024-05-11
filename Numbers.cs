@@ -180,16 +180,13 @@ class Natural {
 
         for (int block = N.blocks.Length - 1; block >= 0; --block) {
             for (int offset = 31; offset >= 0; --offset) {
-                Natural bit = new Natural();
-                if (((N.blocks[block] >> offset) & (uint)1) == (uint)1) {
-                    bit.blocks[0] = 1;
-                }
+
                 result = result.MultiplyByTwo();
-                result = result.Add(bit);
+                if (((N.blocks[block] >> offset) & 1) == 1) {
+                    result = result.Add(this);
+                }
             }
         }
-
-        result.CorrectSize();
 
         return result;
     }
@@ -235,16 +232,4 @@ class Natural {
 
         return s;
     }
-}
-
-class Integer : INumber {
-
-}
-
-class Residue : INumber {
-
-}
-
-class Rational : INumber {
-
 }

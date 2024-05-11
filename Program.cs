@@ -2,6 +2,6 @@
 
 class Apskal {
     static void Main() {
-        
+
     }
 }

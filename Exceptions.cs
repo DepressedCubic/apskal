@@ -11,3 +11,7 @@ class InvalidDigitException : Exception {
 class DivisionByZeroException : Exception {
 
 }
+
+class InvalidExpressionException : Exception {
+
+}

@@ -233,3 +233,76 @@ class Natural {
         return s;
     }
 }
+
+class Integer {
+
+    Natural magnitude;
+    bool is_negative;
+
+    public Integer() {
+        this.magnitude = new Natural();
+        is_negative = false;
+    }
+
+    public Integer(string s) {
+        if (s.Length == 0 || ((s.Length == 1) && s == "-")) {
+            throw new InvalidExpressionException();
+        }
+        else {
+            if (s[0] == '-') {
+                magnitude = new Natural(s[1..]);
+                is_negative = true;
+            }
+            else {
+                magnitude = new Natural(s);
+                is_negative = false;
+            }
+        }
+    }
+
+    public Integer Add(Integer N) {
+
+        Integer sum = new Integer();
+
+        if (!this.is_negative && !N.is_negative) {
+            sum.magnitude = this.magnitude.Add(N.magnitude);
+            sum.is_negative = false;
+        }
+        else if (!this.is_negative && N.is_negative) {
+            sum.magnitude = this.magnitude.Monus(N.magnitude, out bool negative);
+            if (negative) {
+                sum.magnitude = N.magnitude.Monus(this.magnitude, out bool x);
+                sum.is_negative = true;
+            }
+            else {
+                sum.is_negative = false;
+            }
+        }
+        else if (this.is_negative && !N.is_negative) {
+            sum.magnitude = this.magnitude.Monus(N.magnitude, out bool negative);
+            if (negative) {
+                sum.magnitude = N.magnitude.Monus(this.magnitude, out bool x);
+                sum.is_negative = false;
+            }
+            else {
+                sum.is_negative = true;
+            }
+        }
+        else {
+            sum.magnitude = this.magnitude.Add(N.magnitude);
+            sum.is_negative = true;
+        }
+
+        return sum;
+    }
+
+    public string GetString() {
+        string s = this.magnitude.GetString();
+
+        if (this.is_negative) {
+            s = '-' + s;
+        }
+
+        return s;
+    }
+}

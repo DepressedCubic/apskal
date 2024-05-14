@@ -261,7 +261,6 @@ class Integer {
     }
 
     public Integer Add(Integer N) {
-
         Integer sum = new Integer();
 
         if (!this.is_negative && !N.is_negative) {
@@ -296,6 +295,40 @@ class Integer {
         return sum;
     }
 
+    public Integer Subtract(Integer N) {
+        Integer difference = new Integer();
+        Integer negation = new Integer();
+
+        negation.magnitude = N.magnitude;
+        negation.is_negative = !N.is_negative;
+
+        difference = this.Add(negation);
+
+        return difference;
+    }
+
+    public Integer Multiply(Integer N) {
+        Integer product = new Integer();
+
+        product.magnitude = this.magnitude.Multiply(N.magnitude);
+        product.is_negative = this.is_negative ^ N.is_negative;
+
+        return product;
+    }
+
+    public Integer Divide(Natural N) {
+        Integer quotient = new Integer();
+
+        quotient.magnitude = this.magnitude.Divide(N, out Natural x);
+        quotient.is_negative = this.is_negative;
+
+        return quotient;
+    }
+
+    public Natural AbsoluteValue() {
+        return this.magnitude;
+    }
+
     public string GetString() {
         string s = this.magnitude.GetString();
 
@@ -304,5 +337,35 @@ class Integer {
         }
 
         return s;
+    }
+}
+
+class Rational : INumber {
+
+    Integer numerator;
+    Integer denominator;
+
+    void Simplify() {
+
+    }
+
+    public Rational Add(Rational Q) {
+
+    }
+
+    public Rational Subtract(Rational Q) {
+
+    }
+
+    public Rational Multiply(Rational Q) {
+
+    }
+
+    public Rational Divide(Rational Q) {
+
+    }
+
+    string GetString() {
+
     }
 }

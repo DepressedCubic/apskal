@@ -1,15 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-interface INumber {
-    INumber Add(INumber N);
-    INumber Subtract(INumber N);
-    INumber Multiply(INumber N);
-    INumber Divide(INumber N);
-    string GetString();
-}
-
-
 class Natural {
 
     uint[] blocks;
@@ -22,6 +13,19 @@ class Natural {
     static bool BlockSubtraction(uint a, uint b, out uint sub) {
         sub = a - b;
         return (sub > a);
+    }
+
+    public static Natural GCD(Natural N, Natural M) {
+        Natural P = N;
+        Natural Q = M;
+
+        while (!Q.IsZero) {
+            P.Divide(Q, out Natural R);
+            P = Q;
+            Q = R;
+        }
+
+        return P;
     }
 
     void CorrectSize() {
@@ -43,8 +47,10 @@ class Natural {
         return this.Add(this);
     }
 
-    bool IsZero() {
-        return (this.blocks.Length == 1) && (blocks[0] == 0);
+    public bool IsZero {
+        get {
+           return (this.blocks.Length == 1) && (blocks[0] == 0); 
+        }
     }
 
     public Natural() {
@@ -192,7 +198,7 @@ class Natural {
     }
 
     public Natural Divide(Natural N, out Natural remainder) {
-        if (N.IsZero()) {
+        if (N.IsZero) {
             throw new DivisionByZeroException();
         }
         else {
@@ -224,7 +230,7 @@ class Natural {
         string s = "";
 
         Natural n = this;
-        while (!n.IsZero()) {
+        while (!n.IsZero) {
             n = n.Divide(TEN, out Natural r);
             char digit = (char)((int)'0' + (int)(r.blocks[0]));
             s = digit + s;
@@ -244,6 +250,11 @@ class Integer {
         is_negative = false;
     }
 
+    public Integer(bool negative, Natural N) {
+        this.magnitude = N;
+        this.is_negative = negative;
+    }
+
     public Integer(string s) {
         if (s.Length == 0 || ((s.Length == 1) && s == "-")) {
             throw new InvalidExpressionException();
@@ -257,6 +268,12 @@ class Integer {
                 magnitude = new Natural(s);
                 is_negative = false;
             }
+        }
+    }
+
+    public bool IsZero {
+        get {
+            return (this.magnitude.IsZero);
         }
     }
 
@@ -325,8 +342,16 @@ class Integer {
         return quotient;
     }
 
-    public Natural AbsoluteValue() {
-        return this.magnitude;
+    public Natural AbsoluteValue {
+        get {
+            return this.magnitude;
+        }
+    }
+
+    public bool IsNegative {
+        get {
+            return this.is_negative;
+        }
     }
 
     public string GetString() {
@@ -340,32 +365,103 @@ class Integer {
     }
 }
 
-class Rational : INumber {
+class Rational {
 
     Integer numerator;
     Integer denominator;
 
     void Simplify() {
+        Natural gcd = Natural.GCD(
+            numerator.AbsoluteValue,
+            denominator.AbsoluteValue);
 
+        bool negative = numerator.IsNegative ^ denominator.IsNegative;
+
+        numerator = new Integer(
+            negative, 
+            numerator.AbsoluteValue.Divide(gcd, out Natural x)
+        );
+        denominator = new Integer(
+            false,
+            denominator.AbsoluteValue.Divide(gcd, out x)
+        );
+    }
+
+    public bool IsZero {
+        get {
+            return (numerator.IsZero);
+        }
+    }
+
+    public Rational(Integer numerator, Integer denominator) {
+        if (denominator.AbsoluteValue.IsZero) {
+            throw new DivisionByZeroException();
+        }
+        else {
+            this.numerator = numerator;
+            this.denominator = denominator;
+
+            this.Simplify();
+        }
     }
 
     public Rational Add(Rational Q) {
-
+        Integer p = this.numerator;
+        Integer q = this.denominator;
+        Integer r = Q.numerator;
+        Integer s = Q.denominator;
+        
+        return new Rational(
+            (p.Multiply(s)).Add(q.Multiply(r)),
+            q.Multiply(s)
+        );
     }
 
     public Rational Subtract(Rational Q) {
+        Integer p = this.numerator;
+        Integer q = this.denominator;
+        Integer r = Q.numerator;
+        Integer s = Q.denominator;
 
+        return new Rational(
+            (p.Multiply(s)).Subtract(q.Multiply(r)),
+            q.Multiply(s)
+        );
     }
 
     public Rational Multiply(Rational Q) {
+        Integer p = this.numerator;
+        Integer q = this.denominator;
+        Integer r = Q.numerator;
+        Integer s = Q.denominator;
 
+        return new Rational(
+            p.Multiply(r),
+            q.Multiply(s)
+        );
     }
 
     public Rational Divide(Rational Q) {
+        Integer p = this.numerator;
+        Integer q = this.denominator;
+        Integer r = Q.numerator;
+        Integer s = Q.denominator;
 
+        if (Q.IsZero) {
+            throw new DivisionByZeroException();
+        }
+        else {
+            return new Rational(
+                p.Multiply(s),
+                q.Multiply(r)
+            );
+        }
     }
 
-    string GetString() {
+    public string GetString() {
+        string num = this.numerator.GetString();
+        string denom = this.denominator.GetString();
 
+        return $"{num} / {denom}";
     }
 }

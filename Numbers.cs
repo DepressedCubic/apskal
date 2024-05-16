@@ -465,3 +465,87 @@ class Rational {
         return $"{num} / {denom}";
     }
 }
+
+class Residue {
+
+    uint value;
+    uint modulo;
+
+    static bool IsPrime(uint n) {
+        for (uint d = 2; d * d <= n; ++d) {
+            if (n % d == 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Residue(uint value, uint modulo) {
+        if (!IsPrime(modulo)) {
+            throw new CompositeModuloException(modulo);
+        }
+        else {
+            this.value = value % modulo;
+            this.modulo = modulo;
+        }
+    }
+
+    public Residue Add(Residue R) {
+        if (this.modulo != R.modulo) {
+            throw new IncompatibleModuloException(this.modulo, R.modulo);
+        }
+        else {
+            return this.Subtract(
+                new Residue(this.modulo - R.value, this.modulo)
+            );
+        }
+    }
+
+    public Residue Subtract(Residue R) {
+        if (this.modulo != R.modulo) {
+            throw new IncompatibleModuloException(this.modulo, R.modulo);
+        }
+        else if (this.value >= R.value) {
+            return new Residue(
+                this.value - R.value, 
+                this.modulo
+                );
+        }
+        else {
+            return new Residue(
+                this.modulo - (R.value - this.value), 
+                this.modulo
+                );
+        }
+    }
+
+    public Residue Multiply(Residue R) {
+        if (this.modulo != R.modulo) {
+            throw new IncompatibleModuloException(this.modulo, R.modulo);
+        }
+        else {
+            Residue p = this;
+            Residue sum = new Residue(0, this.modulo);
+            uint q = R.value;
+            while (q > 1) {
+                if ((q & 1) == 1) {
+                    sum = sum.Add(p);
+                }
+                p = p.Add(p);
+                q >>= 1;
+            }
+
+            return sum;
+        }
+    }
+
+    public Residue Divide(Residue R) {
+        if (this.modulo != R.modulo) {
+            throw new IncompatibleModuloException(this.modulo, R.modulo);
+        }
+        else {
+            
+        }
+    }
+}

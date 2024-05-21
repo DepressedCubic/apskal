@@ -1,6 +1,18 @@
 using System;
 using System.Collections.Generic;
 
+interface IField<F> {
+
+    F Add(F x);
+    F Subtract(F x);
+    F Multiply(F x);
+    F Divide(F x);
+    F Reciprocal();
+    bool IsZero { get; }
+    string GetString();
+    
+}
+
 class Natural {
 
     uint[] blocks;
@@ -365,7 +377,7 @@ class Integer {
     }
 }
 
-class Rational {
+class Rational : IField<Rational> {
 
     Integer numerator;
     Integer denominator;
@@ -458,6 +470,13 @@ class Rational {
         }
     }
 
+    public Rational Reciprocal() {
+        Integer p = this.numerator;
+        Integer q = this.denominator;
+
+        return new Rational(q, p);
+    }
+
     public string GetString() {
         string num = this.numerator.GetString();
         string denom = this.denominator.GetString();
@@ -466,7 +485,7 @@ class Rational {
     }
 }
 
-class Residue {
+class Residue : IField<Residue> {
 
     uint value;
     uint modulo;
@@ -479,6 +498,12 @@ class Residue {
         }
 
         return true;
+    }
+
+    public bool IsZero {
+        get {
+            return this.value == 0;
+        }
     }
 
     public Residue(uint value, uint modulo) {
@@ -528,7 +553,7 @@ class Residue {
             Residue p = this;
             Residue sum = new Residue(0, this.modulo);
             uint q = R.value;
-            while (q > 1) {
+            while (q >= 1) {
                 if ((q & 1) == 1) {
                     sum = sum.Add(p);
                 }
@@ -540,12 +565,43 @@ class Residue {
         }
     }
 
+    public Residue Power(uint N) {
+        Residue exp = this;
+        Residue prod = new Residue(1, this.modulo);
+        uint q = N;
+        while (q >= 1) {
+            if ((q & 1) == 1) {
+                prod = prod.Multiply(exp);
+            }
+            exp = exp.Multiply(exp);
+            q >>= 1;
+        }
+
+        return prod;
+    }
+
     public Residue Divide(Residue R) {
         if (this.modulo != R.modulo) {
             throw new IncompatibleModuloException(this.modulo, R.modulo);
         }
-        else {
-            
+        else if (R.IsZero) {
+            throw new DivisionByZeroException();
         }
+        else {
+            return this.Multiply(R.Power(this.modulo - 2));
+        }
+    }
+
+    public Residue Reciprocal() {
+        if (this.IsZero) {
+            throw new DivisionByZeroException();
+        }
+        else {
+            return this.Power(this.modulo - 2);
+        }
+    }
+
+    public string GetString() {
+        return this.value.ToString();
     }
 }

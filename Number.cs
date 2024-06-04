@@ -8,9 +8,14 @@ interface IField<F> {
     F Multiply(F x);
     F Divide(F x);
     F Reciprocal();
+    F Negation();
+    // a trick...
+    F GetZero();
+    F GetOne();
+
     bool IsZero { get; }
     string GetString();
-    
+
 }
 
 class Natural {
@@ -354,6 +359,15 @@ class Integer {
         return quotient;
     }
 
+    public Integer Negation() {
+        Integer n = new Integer();
+
+        n.magnitude = this.magnitude;
+        n.is_negative = !this.is_negative;
+
+        return n;
+    }
+
     public Natural AbsoluteValue {
         get {
             return this.magnitude;
@@ -404,6 +418,7 @@ class Rational : IField<Rational> {
             return (numerator.IsZero);
         }
     }
+
 
     public Rational(Integer numerator, Integer denominator) {
         if (denominator.AbsoluteValue.IsZero) {
@@ -475,6 +490,27 @@ class Rational : IField<Rational> {
         Integer q = this.denominator;
 
         return new Rational(q, p);
+    }
+
+    public Rational Negation() {
+        Integer p = this.numerator.Negation();
+        Integer q = this.denominator;
+
+        return new Rational(p, q);
+    }
+
+    public Rational GetZero() {
+        Integer p = new Integer();
+        Integer q = new Integer("1");
+
+        return new Rational(p, q);
+    }
+
+    public Rational GetOne() {
+        Integer p = new Integer("1");
+        Integer q = new Integer("1");
+
+        return new Rational(p, q);
     }
 
     public string GetString() {
@@ -599,6 +635,26 @@ class Residue : IField<Residue> {
         else {
             return this.Power(this.modulo - 2);
         }
+    }
+
+    public Residue Negation() {
+        if (this.IsZero) {
+            return new Residue(this.value, this.modulo);
+        }
+        else {
+            return new Residue(
+                this.modulo - this.value,
+                this.modulo
+            );
+        }
+    }
+
+    public Residue GetZero() {
+        return new Residue(0, this.modulo);
+    }
+
+    public Residue GetOne() {
+        return new Residue(1, this.modulo);
     }
 
     public string GetString() {

@@ -33,3 +33,7 @@ class IncompatibleModuloException : Exception {
         this.modulo2 = modulo2;
     }
 }
+
+class IncompatibleDimensionsException : Exception {
+
+}

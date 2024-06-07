@@ -37,3 +37,11 @@ class IncompatibleModuloException : Exception {
 class IncompatibleDimensionsException : Exception {
 
 }
+
+class UnknownCharacterException : Exception {
+    char c;
+
+    public UnknownCharacterException(char c) {
+        this.c = c;
+    }
+}

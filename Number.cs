@@ -486,8 +486,15 @@ class Rational : IField<Rational> {
     }
 
     public Rational(string s) {
-        this.numerator = new Integer(s);
-        this.denominator = IntONE;
+        string[] q = s.Split('/');
+        if (q.Length == 1) {
+            this.numerator = new Integer(s);
+            this.denominator = IntONE;
+        }
+        else {
+            this.numerator = new Integer(q[0]);
+            this.denominator = new Integer(q[1]);
+        }
     }
 
     public Rational Add(Rational Q) {

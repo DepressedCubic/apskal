@@ -71,7 +71,7 @@ dotnet run
     and we would indeed get the correct values (try it!)
 
 
-2. Suppose we have $F = \in \mathbb{Q}^{2 \times 2}$ as defined below and we want to compute $F^5$. We would proceed as follows:
+2. Suppose we have $F \in \mathbb{Q}^{2 \times 2}$ as defined below and we want to compute $F^5$. We would proceed as follows:
     ```
     > DEF Matrix[Q][2][2] F
     1 1

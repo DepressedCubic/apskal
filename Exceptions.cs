@@ -12,8 +12,7 @@ class DivisionByZeroException : Exception {
 
 }
 
-class InvalidExpressionException : Exception {
-
+class InvalidIntegerException : Exception {
 }
 
 class CompositeModuloException : Exception {
@@ -35,7 +34,6 @@ class IncompatibleModuloException : Exception {
 }
 
 class IncompatibleDimensionsException : Exception {
-
 }
 
 class UnknownCharacterException : Exception {
@@ -44,4 +42,10 @@ class UnknownCharacterException : Exception {
     public UnknownCharacterException(char c) {
         this.c = c;
     }
+}
+
+class InvalidSyntaxException : Exception {
+}
+
+class IncompatibleTypeException : Exception {
 }

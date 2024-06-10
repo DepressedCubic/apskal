@@ -4,7 +4,19 @@ class Matrix<F> where F : IField<F> {
     int width;
     int height;
 
-    F[,] entries;
+    public F[,] entries;
+
+    public int Height {
+        get { 
+            return height;
+        }
+    }
+
+    public int Width {
+        get {
+            return width;
+        }
+    }
 
     private void SwapRows(int i, int j) {
         for (int k = 0; k < this.width; ++k) {
@@ -29,6 +41,8 @@ class Matrix<F> where F : IField<F> {
 
     public Matrix(F[,] entries) {
         this.entries = entries;
+        this.height = entries.GetLength(0);
+        this.width = entries.GetLength(1);
     }
 
     public Matrix<F> Clone() {
@@ -57,6 +71,7 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
+
     public Matrix<F> Multiply(Matrix<F> M) {
         if (this.width != M.height) {
             throw new IncompatibleDimensionsException();
@@ -81,10 +96,33 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
+    public Matrix<F> MultiplyScalar(F a) {
+        Matrix<F> m = this.Clone();
+        for (int row = 0; row < height; ++row) {
+            m.MultiplyRow(a, row);
+        }
+
+        return m;
+    }
+
+    public Matrix<F> Negation() {
+        Matrix<F> negation = this.Clone();
+        negation = negation.MultiplyScalar(
+            this.entries[0,0].GetOne().Negation());
+        return negation;
+    }
+
+    public Matrix<F> Subtract(Matrix<F> M) {
+        Matrix<F> negation = this.Negation();
+        return this.Add(negation);
+    }
+
     // computes reduced row echelon form of a matrix
-    public Matrix<F> RREF(out int rank) {
+    public Matrix<F> RREF(out int rank, out F determinant) {
         int row = 0;
         rank = 0;
+
+        determinant = this.entries[0,0].GetOne();
 
         Matrix<F> rref = this.Clone();
         List<(int, int)> pivots = new();
@@ -92,7 +130,12 @@ class Matrix<F> where F : IField<F> {
         for (int col = 0; col < rref.width; ++col) {
             for (int i = row; i < rref.height; ++i) {
                 if (!rref.entries[i, col].IsZero) {
+
                     rref.SwapRows(row, i);
+                    if (row != i) {
+                        determinant = determinant.Negation();
+                    }
+
                     F pivot = rref.entries[row, col];
                     for (int j = row + 1; j < rref.height; ++j) {
                         F entry = rref.entries[j, col];
@@ -101,6 +144,7 @@ class Matrix<F> where F : IField<F> {
                     }
                     rank++;
                     pivots.Add((row, col));
+                    row++;
                     break;
                 }
             }
@@ -109,10 +153,17 @@ class Matrix<F> where F : IField<F> {
         pivots.Reverse();
         foreach ((int r, int c) in pivots) {
             F entry = rref.entries[r, c];
+
+            determinant = determinant.Multiply(entry);
             rref.MultiplyRow(entry.Reciprocal(), r);
+
             for (int i = 0; i < r; ++i) {
                 rref.AddScalarMultiple(i, rref.entries[i, c].Negation(), r);
             }
+        }
+
+        if (!((this.height == rank) && (this.width == rank))) {
+            determinant = determinant.GetZero();
         }
 
         return rref;

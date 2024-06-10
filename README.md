@@ -15,6 +15,7 @@ A rudimentary CLI arbitrary-precision prefix-notation symbolic calculator writte
 ```
 dotnet run
 ```
+- By default, you must have .NET 8.0 installed; for other versions you may have to modify ```apskal.csproj``` accordingly (in that case, optimal results are not guaranteed).
 
 ## User Instructions
 
@@ -43,7 +44,7 @@ dotnet run
 - Recall that the syntax is ```EVAL <type>```.
 - After entering this command, in the next line you must write an expression in prefix notation with type ```<type>```.
 - An **expression** may contain any combination of (valid) operations, literals and previously defined variables. Having entered the expression, the program will print the result of evaluating this expression (which may be either a number or a matrix).
-- Note that currently, only integer literals can appear in expressions; therefore, to include a fraction in an expression you must have either define it before the evaluation, or write ```/ p q``` for ```p/q```.
+- Note that currently, only integer literals can appear in expressions; therefore, to include a fraction in an expression you must either define it before the evaluation, or write ```/ p q``` for ```p/q```.
 - For numbers (i.e. elements of $\mathbb{Q}$ and $\mathbb{Z}_p$) the currently allowed operations are: ```*``` (multiplication), ```+``` (addition), ```/``` (division) and ```-``` (subtraction). All of these are binary, meaning they take two arguments.
 - For matrices, the currently allowed operations are ```*``` (multiplication -- but remember it's not commutative!), ```+``` (addition), ```-``` (subtraction), and ```rref``` (reduced row echelon form). The first three operations are binary and the last one is unary.
 

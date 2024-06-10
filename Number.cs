@@ -20,6 +20,20 @@ interface IField<F> {
 
 class Natural {
 
+    static Natural[] Initialized = {
+        new Natural(),
+        new Natural(1),
+        new Natural(2),
+        new Natural(3),
+        new Natural(4),
+        new Natural(5),
+        new Natural(6),
+        new Natural(7),
+        new Natural(8),
+        new Natural(9),
+        new Natural(10)
+    };
+
     uint[] blocks;
 
     static bool BlockAddition(uint a, uint b, out uint sum) {
@@ -70,6 +84,12 @@ class Natural {
         }
     }
 
+    public bool IsOne {
+        get {
+            return (this.blocks.Length == 1) && (blocks[0] == 1);
+        }
+    }
+
     public Natural() {
         this.blocks = new uint[1];
         this.blocks[0] = 0;
@@ -92,14 +112,22 @@ class Natural {
         }
     }
 
+    public Natural Precomputed(int n) {
+        if (n <= 10) {
+            return Natural.Initialized[n];
+        }
+        else {
+            return Natural.Initialized[0];
+        }
+    }
+
 
     public Natural(string expansion) {
-        Natural result = new Natural();
-        Natural TEN = new Natural(10);
+        Natural result = Precomputed(0);
 
         foreach (char c in expansion) {
-            result = result.Multiply(TEN);
-            result = result.Add(new Natural(c));
+            result = result.Multiply(Precomputed(10));
+            result = result.Add(Precomputed(c - '0'));
         }
 
         this.blocks = result.blocks;
@@ -132,7 +160,7 @@ class Natural {
             truncated_sum[i] = block_sum;
         }
 
-        Natural sum = new();
+        Natural sum = new Natural();
 
         if (overflow) {
             sum.blocks = new uint[max.blocks.Length + 1];
@@ -199,7 +227,7 @@ class Natural {
     }
 
     public Natural Multiply(Natural N) {
-        Natural result = new Natural();
+        Natural result = Precomputed(0);
 
         for (int block = N.blocks.Length - 1; block >= 0; --block) {
             for (int offset = 31; offset >= 0; --offset) {
@@ -243,15 +271,20 @@ class Natural {
     }
 
     public string GetString() {
-        Natural TEN = new Natural(10);
+        Natural TEN = Precomputed(10);
         string s = "";
 
         Natural n = this;
+        if (n.IsZero) {
+            return "0";
+        }
+
         while (!n.IsZero) {
             n = n.Divide(TEN, out Natural r);
             char digit = (char)((int)'0' + (int)(r.blocks[0]));
             s = digit + s;
         }
+
 
         return s;
     }
@@ -274,7 +307,7 @@ class Integer {
 
     public Integer(string s) {
         if (s.Length == 0 || ((s.Length == 1) && s == "-")) {
-            throw new InvalidExpressionException();
+            throw new InvalidIntegerException();
         }
         else {
             if (s[0] == '-') {
@@ -291,6 +324,15 @@ class Integer {
     public bool IsZero {
         get {
             return (this.magnitude.IsZero);
+        }
+    }
+
+    public bool IsOne {
+        get {
+            return (
+                (!this.is_negative) &&
+                (this.magnitude.IsOne)
+            );
         }
     }
 
@@ -383,6 +425,10 @@ class Integer {
     public string GetString() {
         string s = this.magnitude.GetString();
 
+        if (this.IsZero) {
+            return "0";
+        }
+
         if (this.is_negative) {
             s = '-' + s;
         }
@@ -392,6 +438,13 @@ class Integer {
 }
 
 class Rational : IField<Rational> {
+
+    static Integer IntZERO = new Integer();
+    static Integer IntONE = new Integer("1");
+
+    static Rational ZERO = new Rational(IntZERO, IntONE);
+    static Rational ONE = new Rational(IntONE, IntONE);
+
 
     Integer numerator;
     Integer denominator;
@@ -430,6 +483,11 @@ class Rational : IField<Rational> {
 
             this.Simplify();
         }
+    }
+
+    public Rational(string s) {
+        this.numerator = new Integer(s);
+        this.denominator = IntONE;
     }
 
     public Rational Add(Rational Q) {
@@ -500,41 +558,34 @@ class Rational : IField<Rational> {
     }
 
     public Rational GetZero() {
-        Integer p = new Integer();
-        Integer q = new Integer("1");
-
-        return new Rational(p, q);
+        return ZERO;
     }
 
     public Rational GetOne() {
-        Integer p = new Integer("1");
-        Integer q = new Integer("1");
-
-        return new Rational(p, q);
+        return ONE;
     }
 
     public string GetString() {
         string num = this.numerator.GetString();
         string denom = this.denominator.GetString();
 
-        return $"{num} / {denom}";
+        if (this.denominator.IsOne) {
+            return $"{num}";
+        }
+        else {
+            return $"{num}/{denom}";
+        }
     }
 }
 
 class Residue : IField<Residue> {
 
+    // Primality testing of the modulo has been offloaded
+    // to the parser (to save time). In case of independent
+    // usage of this class, please check for primality manually.
+
     uint value;
     uint modulo;
-
-    static bool IsPrime(uint n) {
-        for (uint d = 2; d * d <= n; ++d) {
-            if (n % d == 0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public bool IsZero {
         get {
@@ -543,13 +594,8 @@ class Residue : IField<Residue> {
     }
 
     public Residue(uint value, uint modulo) {
-        if (!IsPrime(modulo)) {
-            throw new CompositeModuloException(modulo);
-        }
-        else {
             this.value = value % modulo;
             this.modulo = modulo;
-        }
     }
 
     public Residue Add(Residue R) {

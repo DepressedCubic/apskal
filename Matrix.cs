@@ -1,23 +1,34 @@
 using System.Collections.Generic;
 
+
+/* Generic class implementing matrices with
+entries in a field F, internally represented
+as a rectangular array. */
 class Matrix<F> where F : IField<F> {
     int width;
     int height;
 
     public F[,] entries;
 
+    /* The property X.Height returns the height of
+    matrix X */
     public int Height {
         get { 
             return height;
         }
     }
 
+    /* The property X.Width returns the width of
+    matrix X. */
     public int Width {
         get {
             return width;
         }
     }
 
+    /* X.SwapRows(i,j) swaps rows i and j
+    of X. 
+    In other words: R_i <-> R_j. */
     private void SwapRows(int i, int j) {
         for (int k = 0; k < this.width; ++k) {
             F temp = this.entries[i, k];
@@ -26,12 +37,19 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
+    /* X.MultiplyRow(a, i) multiplies row i by the
+    scalar a, which is a member of the same field as
+    the entries of X. 
+    In other words: R_i -> a * R_i.*/
     private void MultiplyRow(F factor, int i) {
         for (int k = 0; k < this.width; ++k) {
             this.entries[i, k] = this.entries[i, k].Multiply(factor);
         }
     }
 
+    /* X.AddScalarMultiply(i, a, j) adds the result of
+    multiplying row j by scalar a to row i.
+    In other words: R_i -> R_i + a * R_j. */
     private void AddScalarMultiple(int i, F factor, int j) {
         for (int k = 0; k < this.width; ++k) {
             F add = this.entries[j, k].Multiply(factor);
@@ -39,12 +57,17 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
+    /* Constructor: Given a rectangular array
+    of elements of some field F, returns the
+    corresponding matrix. */
     public Matrix(F[,] entries) {
         this.entries = entries;
         this.height = entries.GetLength(0);
         this.width = entries.GetLength(1);
     }
 
+    /* X.Clone() creates a shallow clone of
+    matrix X. */
     public Matrix<F> Clone() {
         F[,] clone = new F[this.height, this.width];
         for (int i = 0; i < this.height; ++i) {
@@ -55,6 +78,8 @@ class Matrix<F> where F : IField<F> {
         return new Matrix<F>(clone);
     }
 
+    /* X.Add(Y) returns X + Y, provided that they
+    have compatible dimensions. */
     public Matrix<F> Add(Matrix<F> M) {
         if ((this.width != M.width) || (this.height != M.height)) {
             throw new IncompatibleDimensionsException();
@@ -71,7 +96,8 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
-
+    /* X.Multiply(Y) returns X * Y (note: not commutative),
+    provided that they have compatible dimensions. */
     public Matrix<F> Multiply(Matrix<F> M) {
         if (this.width != M.height) {
             throw new IncompatibleDimensionsException();
@@ -96,6 +122,10 @@ class Matrix<F> where F : IField<F> {
         }
     }
 
+    /* X.MultiplyScalar(a) returns the matrix
+    that results from multiplying each entry of X
+    by scalar a, which must be in the same field as
+    the entries of X. */
     public Matrix<F> MultiplyScalar(F a) {
         Matrix<F> m = this.Clone();
         for (int row = 0; row < height; ++row) {
@@ -105,6 +135,9 @@ class Matrix<F> where F : IField<F> {
         return m;
     }
 
+    /* X.Negation() returns the matrix -X;
+    i.e. the one that results from negating each
+    entry of X. */    
     public Matrix<F> Negation() {
         Matrix<F> negation = this.Clone();
         negation = negation.MultiplyScalar(
@@ -112,12 +145,17 @@ class Matrix<F> where F : IField<F> {
         return negation;
     }
 
+    /* X.Subtract(Y) returns X - Y, provided
+    that they have compatible dimensions. */
     public Matrix<F> Subtract(Matrix<F> M) {
         Matrix<F> negation = this.Negation();
         return this.Add(negation);
     }
 
-    // computes reduced row echelon form of a matrix
+    /* X.RREF(...,...) returns the reduced row echelon
+    form of X, computed through the row reduction
+    algorithm. The out parameter 'rank' provides rank(X),
+    and the out parameter 'determinant' provides det(X). */
     public Matrix<F> RREF(out int rank, out F determinant) {
         int row = 0;
         rank = 0;

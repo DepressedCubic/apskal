@@ -1,5 +1,11 @@
+/* The Evaluation class is in charge of the real-time evaluation
+of expressions in prefix notation. When variables are encountered,
+it attempts to extract their value from the dictionaries in the
+Runtime class. */
 class Evaluation {
 
+    /* Evaluation.EvaluateRational(e) returns the rational
+    number that the string 'e' evaluates to. */
     public static Rational EvaluateRational(string expression) {
         Lexer l = new Lexer(expression);
 
@@ -39,6 +45,8 @@ class Evaluation {
         return Evaluate();
     }
 
+    /* Evaluation.EvaluateResidue(e, p) returns the element in the field
+    Z_p that the string 'e' evaluates to. */
     public static Residue EvaluateResidue(string expression, uint modulo) {
         Lexer l = new Lexer(expression);
 
@@ -78,6 +86,8 @@ class Evaluation {
         return Evaluate();
     } 
 
+    /* Evaluation.EvaluateRationalMatrix(e) returns the matrix of
+    rational entries that the string 'e' evaluates to. */
     public static Matrix<Rational> EvaluateRationalMatrix(string expression) {
         Lexer l = new Lexer(expression);
 
@@ -117,6 +127,10 @@ class Evaluation {
         return Evaluate();
     }
 
+    /* Evaluation.EvaluateResidueMatrix(e) returns the matrix of entries
+    in a field Z_p that the string 'e' evaluates to. Note that it doesn't ask
+    for the particular p, since the entries of the matrix itself hold this
+    information. */
     public static Matrix<Residue> EvaluateResidueMatrix(string expression) {
         Lexer l = new Lexer(expression);
 

@@ -1,13 +1,24 @@
 using System.Collections.Generic;
 using System;
 
+/* The Runtime class is in charge of anything that happens in runtime:
+storing variables, printing and executing commands by calling
+the appropriate methods from the Parser and Evaluation classes. */
 class Runtime {
 
+    /* These four dictionaries contain the values of the currently defined
+    variables, of the four possible types (namely: rationals, elements of
+    some field Z_p, matrices with rational entries, and matrices with
+    entries in some field Z_p). */
     public static Dictionary<string,Rational> Rationals = new();
     public static Dictionary<string,Residue> Residues = new();
     public static Dictionary<string,Matrix<Rational>> RationalMatrices = new();
     public static Dictionary<string,Matrix<Residue>> ResidueMatrices = new();
 
+    /* Runtime.StoreNumber(type, name, p) stores a number of type 'type'
+    (namely: Rational or Residue), and, if type = Residue, stores the number
+    as a member of the field Z_p.
+    NOTE: This includes prompting the user. */
     public static void StoreNumber(Parser.ValueType type, string name, uint modulo=0) {
 
         string literal = Console.ReadLine()!;
@@ -30,6 +41,11 @@ class Runtime {
         }
     }
 
+    /* Runtime.StoreMatrix(t, h, w, n, p) stores a matrix of type 't'
+    (namely: RationalMatrix or ResidueMatrix) of height 'h' and
+    width 'w'. If type = ResidueMatrix, ensures the entries are in the
+    the field Z_p. 
+    NOTE: This includes prompting the user. */
     public static void StoreMatrix(
         Parser.ValueType type,
         int height,
@@ -73,6 +89,9 @@ class Runtime {
         }
     }
 
+    /* Runtime.PrintMatrix<F>(X) prints the matrix X with entries in
+    the field F, taking care of all necessary formatting to make it
+    readable. */
     public static void PrintMatrix<F>(Matrix<F> M) where F : IField<F> {
         string[,] text = new string[M.Height, M.Width];
 
@@ -106,11 +125,19 @@ class Runtime {
         Console.WriteLine("╰" + new string(' ', width) + "╯");
     }
 
+    /* Runtime.PrintNumber<F>(x) prints the number x from field F. */
     public static void PrintNumber<F>(F x) where F : IField<F> {
         Console.Write("RESULT: ");
         Console.WriteLine(x.GetString());
     }
 
+    /* Runtime.ExecuteCommand(c) takes command 'c', asks the Parser class
+    to parse it, and executes it. In particular:
+    - If the keyword is 'EXIT', lets the program know that it's ready to exit.
+    - If the keyword is 'DEF', either calls StoreNumber or StoreMatrix accordingly.
+    - If the keyword is 'EVAL', prompts the user for the expression to
+    to be evaluated, calls the appropriate functions from the Evaluation class,
+    and prints the result using either PrintMatrix or PrintNumber. */
     public static void ExecuteCommand(string command) {
         Parser.ParseCommand(
             command, 

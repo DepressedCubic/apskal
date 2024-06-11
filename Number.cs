@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+/* Interface representing any operations you may want to do with
+members of a field (in the mathematical sense of the word). */
 interface IField<F> {
 
     F Add(F x);
@@ -9,17 +11,30 @@ interface IField<F> {
     F Divide(F x);
     F Reciprocal();
     F Negation();
-    // a trick...
+
+    /* Given an element of a field, outputs the additive identity
+    of this field. */
     F GetZero();
+
+    /* Given an element of a field, outputs the multiplicative
+    identity of this field. */
     F GetOne();
 
+    /* Returns whether this element is either equal to zero or not. */    
     bool IsZero { get; }
+
+    /* Returns the textual representation of this element of the field. */
     string GetString();
 
 }
 
+/* Implementation of natural numbers (starting from 0) with arbitrary
+precision. Uses an array of 32-bit uints (blocks) to achieve this. */
 class Natural {
 
+    /* To speed things up a bit, given that naturals up to 10 are
+    heavily used in most applications, we initialize these from the
+    beginning. */
     static Natural[] Initialized = {
         new Natural(),
         new Natural(1),
@@ -36,29 +51,28 @@ class Natural {
 
     uint[] blocks;
 
+    /* Performs the usual addition of two uints (blocks), which
+    is stored in the out parameter 'sum', and returns 'true'
+    if there was an overflow (i.e. we must carry to the next
+    block). */
     static bool BlockAddition(uint a, uint b, out uint sum) {
         sum = a + b;
         return (sum < a);
     }
 
+    /* Performs the usual subtraction of two uints (blocks), which
+    is stored in the out parameter 'sub', and returns 'true'
+    if there was an underflow (i.e. we must borrow from the next
+    block). */
     static bool BlockSubtraction(uint a, uint b, out uint sub) {
         sub = a - b;
         return (sub > a);
     }
 
-    public static Natural GCD(Natural N, Natural M) {
-        Natural P = N;
-        Natural Q = M;
 
-        while (!Q.IsZero) {
-            P.Divide(Q, out Natural R);
-            P = Q;
-            Q = R;
-        }
-
-        return P;
-    }
-
+    /* Corrects the size of the object's array of uints, so that
+    no leading blocks equal to 0 are stored; thus obtaining a
+    'canonical' representation of any natural. */
     void CorrectSize() {
         int k = this.blocks.Length - 1;
         while ((k >= 0) && (this.blocks[k] == 0)) {
@@ -74,32 +88,37 @@ class Natural {
         this.blocks = new_blocks;
     }
 
-    Natural MultiplyByTwo() {
-        return this.Add(this);
-    }
-
+    /* Property that determines whether a given natural is equal to
+    zero. */
     public bool IsZero {
         get {
            return (this.blocks.Length == 1) && (blocks[0] == 0); 
         }
     }
 
+    /* Property that determines whether a given natural is equal to
+    one. */
     public bool IsOne {
         get {
             return (this.blocks.Length == 1) && (blocks[0] == 1);
         }
     }
 
+    /* Most basic constructor: returns zero. */
     public Natural() {
         this.blocks = new uint[1];
         this.blocks[0] = 0;
     }
 
+    /* Given an unsigned integer 'n' (i.e. up to 2^32 - 1),
+    returns a natural exactly equal to 'n'. */
     public Natural(uint n) {
         this.blocks = new uint[1];
         this.blocks[0] = n;
     }
 
+    /* Given a character (which must be a digit), returns the
+    natural number corresponding to this digit. */
     public Natural(char digit) {
         this.blocks = new uint[1];
         uint offset = (uint)(digit - '0');
@@ -112,8 +131,11 @@ class Natural {
         }
     }
 
+    /* For integers 'n' between 0 and 10, returns the
+    pre-initialized natural corresponding to them. For
+    integers outside this range, just returns zero. */
     public Natural Precomputed(int n) {
-        if (n <= 10) {
+        if ((n <= 0) && (n <= 10)) {
             return Natural.Initialized[n];
         }
         else {
@@ -121,18 +143,10 @@ class Natural {
         }
     }
 
-
-    public Natural(string expansion) {
-        Natural result = Precomputed(0);
-
-        foreach (char c in expansion) {
-            result = result.Multiply(Precomputed(10));
-            result = result.Add(Precomputed(c - '0'));
-        }
-
-        this.blocks = result.blocks;
-    }
-
+    /* Performs addition of natural numbers 'this' and 'N'.
+    To do so, it performs BlockAddition block-by-block, taking
+    care of the carry if necessary (and in some cases, the
+    extension of the array). */
     public Natural Add(Natural N) {
         Natural max, min;
         if (this.blocks.Length >= N.blocks.Length) {
@@ -176,10 +190,19 @@ class Natural {
         return sum;
     }
 
-    // Computes the monus A.Monus(B) of natural numbers
-    // A and B; that is, if A >= B, it returns A - B,
-    // otherwise it returns 0.
 
+    /* Returns the result of multiplying 'this' by two.
+    Possibly achievable with bitwise operations, but for
+    simplicity the already-implemented 'Add' method was used. */
+    Natural MultiplyByTwo() {
+        return this.Add(this);
+    }
+
+    /* Given that subtraction of natural numbers is not always
+    defined, returns the monus A.Monus(B) of
+    natural numbers A and B; that is, if A >= B, it returns
+    A - B, and 0 otherwise. The out parameter 'negative'
+    indicates whether A >= B (false) or A < B (true). */
     public Natural Monus(Natural N, out bool negative) {
         Natural max, min;
         if (this.blocks.Length >= N.blocks.Length) {
@@ -221,11 +244,15 @@ class Natural {
         return sub;
     }
 
+    /* A.GreaterThan(B) returns 'true' iff
+    A > B; uses A.Monus(B) to determine this. */
     public bool GreaterThan(Natural N) {
         N.Monus(this, out bool negative);
         return negative;
     }
 
+    /* A.Multiply(B) returns the product of
+    naturals A and B. */   
     public Natural Multiply(Natural N) {
         Natural result = Precomputed(0);
 
@@ -242,6 +269,10 @@ class Natural {
         return result;
     }
 
+    /* A.Divide(B) returns the integer division of A by B
+    (which, for naturals A and B, will also be a natural).
+    The out parameter 'remainder' returns the remainder of
+    this division (as a natural number as well). */
     public Natural Divide(Natural N, out Natural remainder) {
         if (N.IsZero) {
             throw new DivisionByZeroException();
@@ -270,6 +301,37 @@ class Natural {
         }
     }
 
+    /* The most general constructor: given an arbitrarily long
+    string of digits, returns the natural number corresponding
+    to this string of digits. */
+    public Natural(string expansion) {
+        Natural result = Precomputed(0);
+
+        foreach (char c in expansion) {
+            result = result.Multiply(Precomputed(10));
+            result = result.Add(Precomputed(c - '0'));
+        }
+
+        this.blocks = result.blocks;
+    }
+
+    /* Natural.GCD(A,B) returns the greatest common divisor of
+    naturals A and B, using Euclid's algorithm as usual. */
+    public static Natural GCD(Natural N, Natural M) {
+        Natural P = N;
+        Natural Q = M;
+
+        while (!Q.IsZero) {
+            P.Divide(Q, out Natural R);
+            P = Q;
+            Q = R;
+        }
+
+        return P;
+    }
+
+    /* A.GetString() returns the textual decimal representation of
+    the natural number A (i.e. a string of decimal digits). */
     public string GetString() {
         Natural TEN = Precomputed(10);
         string s = "";
@@ -290,21 +352,31 @@ class Natural {
     }
 }
 
+/* Implementation of integers with arbitrary precision;
+to do so, stores the magnitude as a Natural and the sign
+as a boolean. */
 class Integer {
 
     Natural magnitude;
     bool is_negative;
 
+    /* Most basic constructor: returns the Integer 0. */
     public Integer() {
         this.magnitude = new Natural();
         is_negative = false;
     }
 
+    /* Constructor: Given a natural N, returns +N if
+    negative = false, and -N if negative = true. */
     public Integer(bool negative, Natural N) {
         this.magnitude = N;
         this.is_negative = negative;
     }
 
+    /* Constructor: Given a textual decimal representation of an
+    integer of arbitrary length, returns the given integer.
+    This representation is a string of decimal digits, optionally
+    preceded by a minus sign. */
     public Integer(string s) {
         if (s.Length == 0 || ((s.Length == 1) && s == "-")) {
             throw new InvalidIntegerException();
@@ -321,12 +393,16 @@ class Integer {
         }
     }
 
+    /* Property that determines whether a given integer
+    is zero. */
     public bool IsZero {
         get {
             return (this.magnitude.IsZero);
         }
     }
 
+    /* Property that determines whether a given integer
+    is one. */
     public bool IsOne {
         get {
             return (
@@ -336,6 +412,9 @@ class Integer {
         }
     }
 
+    /* A.Add(B) returns the integer A + B, using the
+    'Add' and 'Monus' methods from the Natural class and
+    taking care of the sign accordingly. */
     public Integer Add(Integer N) {
         Integer sum = new Integer();
 
@@ -371,6 +450,8 @@ class Integer {
         return sum;
     }
 
+    /* A.Subtract(B) returns the integer A - B, using the already
+    implemented 'Add' method for Integers. */
     public Integer Subtract(Integer N) {
         Integer difference = new Integer();
         Integer negation = new Integer();
@@ -383,6 +464,9 @@ class Integer {
         return difference;
     }
 
+    /* A.Product(B) returns the integer A * B, using the already
+    implemented 'Multiply' method in the Natural class, taking
+    care of the sign accordingly. */
     public Integer Multiply(Integer N) {
         Integer product = new Integer();
 
@@ -392,6 +476,9 @@ class Integer {
         return product;
     }
 
+    /* A.Divide(B) returns the integer division of A by B, where
+    A is an integer and B a natural (which means that the sign
+    will not change). */
     public Integer Divide(Natural N) {
         Integer quotient = new Integer();
 
@@ -401,6 +488,7 @@ class Integer {
         return quotient;
     }
 
+    /* A.Negation() returns the integer -A. */
     public Integer Negation() {
         Integer n = new Integer();
 
@@ -410,18 +498,23 @@ class Integer {
         return n;
     }
 
+    /* The property A.AbsoluteValue returns |A|, as a natural. */
     public Natural AbsoluteValue {
         get {
             return this.magnitude;
         }
     }
 
+    /* The property A.IsNegative returns 'true' iff A is negative. */
     public bool IsNegative {
         get {
             return this.is_negative;
         }
     }
 
+    /* A.GetString() returns the textual decimal representation of
+    the integer A (that is, a string of decimal digits, optionally
+    preceded by a minus sign). */
     public string GetString() {
         string s = this.magnitude.GetString();
 
@@ -437,8 +530,12 @@ class Integer {
     }
 }
 
+/* Implementation of rational numbers with arbitrary precision;
+to do so, stores the numerator and denominator as Integers. */
 class Rational : IField<Rational> {
 
+    /* Some commonly used rational numbers are initialized
+    from the very beginning to save time. */
     static Integer IntZERO = new Integer();
     static Integer IntONE = new Integer("1");
 
@@ -449,6 +546,10 @@ class Rational : IField<Rational> {
     Integer numerator;
     Integer denominator;
 
+    /* A.Simplify() simplifies Rational A so that the
+    numerator and denominator are coprime, and the denominator
+    is strictly positive; thus obtaining a 'canonical'
+    representation of any rational number. */
     void Simplify() {
         Natural gcd = Natural.GCD(
             numerator.AbsoluteValue,
@@ -466,13 +567,16 @@ class Rational : IField<Rational> {
         );
     }
 
+    /* The property A.IsZero returns 'true' iff A is zero. */
     public bool IsZero {
         get {
             return (numerator.IsZero);
         }
     }
 
-
+    /* Constructor: Rational(A,B) returns a rational number
+    of numerator A and nonzero denominator B. Also takes
+    care of simplifying. */
     public Rational(Integer numerator, Integer denominator) {
         if (denominator.AbsoluteValue.IsZero) {
             throw new DivisionByZeroException();
@@ -485,6 +589,10 @@ class Rational : IField<Rational> {
         }
     }
 
+    /* Constructor: Given a textual representation of a
+    rational number of either the form p or p/q, for integers
+    p and q, returns the Rational corresponding to this
+    representation. */
     public Rational(string s) {
         string[] q = s.Split('/');
         if (q.Length == 1) {
@@ -497,6 +605,7 @@ class Rational : IField<Rational> {
         }
     }
 
+    /* P.Add(Q) returns the rational P + Q. */
     public Rational Add(Rational Q) {
         Integer p = this.numerator;
         Integer q = this.denominator;
@@ -509,6 +618,7 @@ class Rational : IField<Rational> {
         );
     }
 
+    /* P.Subtract(Q) returns the rational P - Q. */
     public Rational Subtract(Rational Q) {
         Integer p = this.numerator;
         Integer q = this.denominator;
@@ -521,6 +631,7 @@ class Rational : IField<Rational> {
         );
     }
 
+    /* P.Multiply(Q) returns the rational P * Q. */
     public Rational Multiply(Rational Q) {
         Integer p = this.numerator;
         Integer q = this.denominator;
@@ -533,6 +644,8 @@ class Rational : IField<Rational> {
         );
     }
 
+    /* For nonzero Q, P.Divide(Q) returns the
+    rational P / Q. */
     public Rational Divide(Rational Q) {
         Integer p = this.numerator;
         Integer q = this.denominator;
@@ -550,6 +663,8 @@ class Rational : IField<Rational> {
         }
     }
 
+    /* P.Reciprocal() returns the multiplicative
+    inverse of P; i.e. P^-1. */
     public Rational Reciprocal() {
         Integer p = this.numerator;
         Integer q = this.denominator;
@@ -557,6 +672,8 @@ class Rational : IField<Rational> {
         return new Rational(q, p);
     }
 
+    /* P.Negation() returns the additive
+    inverse of P; i.e. -P. */
     public Rational Negation() {
         Integer p = this.numerator.Negation();
         Integer q = this.denominator;
@@ -564,14 +681,22 @@ class Rational : IField<Rational> {
         return new Rational(p, q);
     }
 
+    /* P.GetZero() returns the rational
+    zero, for any P. */
     public Rational GetZero() {
         return ZERO;
     }
 
+    /* P.GetOne() returns the rational
+    one, for any P. */
     public Rational GetOne() {
         return ONE;
     }
 
+    /* P.GetOne() returns a textual
+    representation of P of the form
+    p if P has denominator 1, or p/q
+    otherwise. */
     public string GetString() {
         string num = this.numerator.GetString();
         string denom = this.denominator.GetString();
@@ -585,26 +710,34 @@ class Rational : IField<Rational> {
     }
 }
 
+/* Implementation of the members of fields of the
+form Z_p, where p is a prime number at most 2^32 - 1. */
 class Residue : IField<Residue> {
 
-    // Primality testing of the modulo has been offloaded
-    // to the parser (to save time). In case of independent
-    // usage of this class, please check for primality manually.
+    /* WARNING: Primality testing of the modulo has been offloaded
+    to the parser (to save time). In case of independent usage of
+    this class, make sure to ensure that 'modulo' is prime; otherwise,
+    the methods 'Divide' and 'Reciprocal' will misbehave. */
 
     uint value;
     uint modulo;
 
+    /* The property x.IsZero returns 'true' iff x is zero (in whichever
+    field it resides in). */
     public bool IsZero {
         get {
             return this.value == 0;
         }
     }
 
+    /* Constructor: Residue(x, p) returns x in the field Z_p. */
     public Residue(uint value, uint modulo) {
             this.value = value % modulo;
             this.modulo = modulo;
     }
 
+    /* x.Add(y) returns x + y, but only if x and y are members
+    of the same field Z_p. */
     public Residue Add(Residue R) {
         if (this.modulo != R.modulo) {
             throw new IncompatibleModuloException(this.modulo, R.modulo);
@@ -616,6 +749,8 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.Subtract(y) returns x - y, but only if x and y are members
+    of the same field Z_p. */
     public Residue Subtract(Residue R) {
         if (this.modulo != R.modulo) {
             throw new IncompatibleModuloException(this.modulo, R.modulo);
@@ -634,6 +769,8 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.Multiply(y) returns x * y, but only if x and y are members of
+    of the same field Z_p. */
     public Residue Multiply(Residue R) {
         if (this.modulo != R.modulo) {
             throw new IncompatibleModuloException(this.modulo, R.modulo);
@@ -654,6 +791,7 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.Power(n) returns x^n, also in the same field as x. */
     public Residue Power(uint N) {
         Residue exp = this;
         Residue prod = new Residue(1, this.modulo);
@@ -669,6 +807,10 @@ class Residue : IField<Residue> {
         return prod;
     }
 
+    /* x.Divide(y) returns x / y if y is non-zero. For this,
+    it uses the previously implemented 'Power' method and
+    Fermat's Little Theorem. Here, the fact that 'modulo' is
+    prime becomes crucial. */
     public Residue Divide(Residue R) {
         if (this.modulo != R.modulo) {
             throw new IncompatibleModuloException(this.modulo, R.modulo);
@@ -681,6 +823,8 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.Reciprocal() returns the multiplicative inverse of x;
+    i.e. x^-1, in the particular field. */
     public Residue Reciprocal() {
         if (this.IsZero) {
             throw new DivisionByZeroException();
@@ -690,6 +834,8 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.Negation() returns the additive inverse of x; i.e. -x,
+    in the particular field. */
     public Residue Negation() {
         if (this.IsZero) {
             return new Residue(this.value, this.modulo);
@@ -702,14 +848,21 @@ class Residue : IField<Residue> {
         }
     }
 
+    /* x.GetZero() returns zero (the additive identity) in the
+    same field as x. */    
     public Residue GetZero() {
         return new Residue(0, this.modulo);
     }
 
+    /* x.GetOne() returns one (the multiplicative identity) in the
+    same field as x. */
     public Residue GetOne() {
         return new Residue(1, this.modulo);
     }
 
+    /* x.GetString() returns the textual representation of x. Given
+    that the user is supposed to know in what field they're working on,
+    the modulo is not included in this representation. */
     public string GetString() {
         return this.value.ToString();
     }

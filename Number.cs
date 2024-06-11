@@ -135,7 +135,7 @@ class Natural {
     pre-initialized natural corresponding to them. For
     integers outside this range, just returns zero. */
     public Natural Precomputed(int n) {
-        if ((n <= 0) && (n <= 10)) {
+        if ((n >= 0) && (n <= 10)) {
             return Natural.Initialized[n];
         }
         else {

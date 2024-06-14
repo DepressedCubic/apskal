@@ -308,8 +308,13 @@ class Natural {
         Natural result = Precomputed(0);
 
         foreach (char c in expansion) {
-            result = result.Multiply(Precomputed(10));
-            result = result.Add(Precomputed(c - '0'));
+            if (char.IsDigit(c)) {
+                result = result.Multiply(Precomputed(10));
+                result = result.Add(Precomputed(c - '0'));
+            }
+            else {
+                throw new InvalidDigitException(c);
+            }
         }
 
         this.blocks = result.blocks;

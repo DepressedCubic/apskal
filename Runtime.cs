@@ -24,10 +24,7 @@ class Runtime {
         string literal = Console.ReadLine()!;
 
         if (type == Parser.ValueType.Rational) {
-            string[] q = literal.Split('/');
-            Integer num = new Integer(q[0]);
-            Integer denom = new Integer(q[1]);
-            Rationals[name] = new Rational(num, denom);
+            Rationals[name] = new Rational(literal);
         }
         // WARNING: Make sure to point out that
         // this only works for literals up to 2^31 - 1.
@@ -198,7 +195,8 @@ class Runtime {
                         break;
 
                 }
-
+                break;
+            default:
                 throw new InvalidSyntaxException();
                 
         }

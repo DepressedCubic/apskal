@@ -204,7 +204,6 @@ class Parser {
                                 throw new InvalidSyntaxException();
 
                             default:
-
                                 throw new InvalidSyntaxException();
 
                         }
@@ -228,7 +227,6 @@ class Parser {
                         break;
 
                     default:
-
                         throw new InvalidSyntaxException();
                         
                 }

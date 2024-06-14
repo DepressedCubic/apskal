@@ -42,7 +42,14 @@ class Evaluation {
             throw new InvalidSyntaxException();
         }
 
-        return Evaluate();
+        Rational eval = Evaluate();
+        l.Next(out Lexer.Token type);
+        if (type != Lexer.Token.None) {
+            throw new InvalidSyntaxException();
+        }
+
+        return eval;
+
     }
 
     /* Evaluation.EvaluateResidue(e, p) returns the element in the field
@@ -83,7 +90,13 @@ class Evaluation {
             throw new InvalidSyntaxException();
         }
 
-        return Evaluate();
+        Residue eval = Evaluate();
+        l.Next(out Lexer.Token type);
+        if (type != Lexer.Token.None) {
+            throw new InvalidSyntaxException();
+        }
+
+        return eval;
     } 
 
     /* Evaluation.EvaluateRationalMatrix(e) returns the matrix of
@@ -124,7 +137,13 @@ class Evaluation {
             throw new InvalidSyntaxException();
         }
 
-        return Evaluate();
+        Matrix<Rational> eval = Evaluate();
+        l.Next(out Lexer.Token type);
+        if (type != Lexer.Token.None) {
+            throw new InvalidSyntaxException();
+        }
+
+        return eval;
     }
 
     /* Evaluation.EvaluateResidueMatrix(e) returns the matrix of entries
@@ -167,6 +186,12 @@ class Evaluation {
             throw new InvalidSyntaxException();
         }
 
-        return Evaluate();
+        Matrix<Residue> eval = Evaluate();
+        l.Next(out Lexer.Token type);
+        if (type != Lexer.Token.None) {
+            throw new InvalidSyntaxException();
+        }
+
+        return eval;
     }
 }

@@ -20,9 +20,7 @@ class Apskal {
                     Runtime.ExecuteCommand(command);
                 }
                 catch (Exception e) {
-                    if (!(e is InvalidSyntaxException i)) {
-                        Console.WriteLine(e.Message);
-                    }
+                    Console.WriteLine(e.Message);
                 }
             }
         }

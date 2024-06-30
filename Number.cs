@@ -220,8 +220,8 @@ class Natural {
         for (int i = 0; i < max.blocks.Length; ++i) {
             bool incoming = borrow;
             borrow = BlockSubtraction(
-                max.blocks[i],
-                (i < min.blocks.Length) ? min.blocks[i] : 0,
+                (i < this.blocks.Length) ? this.blocks[i] : 0,
+                (i < N.blocks.Length) ? N.blocks[i] : 0,
                 out uint block_sub
             );
             if (incoming) {
